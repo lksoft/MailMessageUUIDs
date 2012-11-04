@@ -4,8 +4,18 @@ property outputAsJSON : false
 property outputFileName : "CompleteMailInfo"
 property outputUUIDListFileName : "SupportableUUIDList.txt"
 property outputUUIDDefinitionsFileName : "CompleteUUIDDefinitions.plist"
+property startingMailComparator : 50
+property startingMessageComparator : 550
+property endingComparator : 999999
 
-on run
+on run argv
+	
+	--	Handle parameters
+	set startingOS to "10.6" --	default value
+	if ((count of argv) > 0) then
+		log "Got at least one parameter"
+		set startingOS to item 1 of argv
+	end if
 	
 	--	Should get the contents from the current directory
 	tell application "Finder"
@@ -13,42 +23,48 @@ on run
 		set infoFolder to container of scriptPath
 	end tell
 	
-	--	Get the info lists
+	--	Get the info lists, sort it and filter based on OS requirements
 	set infoList to buildInfoListfromFolder(infoFolder)
+	set infoList to sortByVersionNumber(infoList)
+	set filteredInfoList to filterForOSStartingWith(infoList, startingOS)
 	
 	--	Create sorted, unique lists of Mail and Message info
-	set completeMailInfo to FilterMailInfo(infoList)
-	set completeMessageInfo to FilterMessageInfo(infoList)
+	set completeMailInfo to filterMailInfo(filteredInfoList)
+	set completeMessageInfo to filterMessageInfo(filteredInfoList)
 	
 	--	Export a list of all of the UUIDs for both parts as simple file
 	if (outputUUIDListFileName is not equal to "") then
-		
 		--	Write the contents of all uuids as a simple list
 		set outputContents to "# All Mail UUIDs" & return & convertListToUUIDStringList(completeMailInfo)
 		set outputContents to outputContents & "# All Message UUIDs" & return & convertListToUUIDStringList(completeMessageInfo)
 		set outFilePath to (infoFolder as string) & outputUUIDListFileName
-		WriteFileWithContents(outFilePath, outputContents)
+		writeFileWithContents(outFilePath, outputContents)
 	end if
 	
+	--	If we should create the UUID Definitions file
+	if (outputUUIDDefinitionsFileName is not equal to "") then
+		--	Then refilter the info without OS filtering
+		set completeMailInfo to filterMailInfo(infoList)
+		set completeMessageInfo to filterMessageInfo(infoList)
+		
+		--	Build plist content sections for each
+		set mailSection to convertListToPlistSection(completeMailInfo)
+		set messageSection to convertListToPlistSection(completeMessageInfo)
+		
+		--	Then stick them together
+		set outputContents to createPlistOutputWithSections({mailSection, messageSection} as list)
+		
+		-- 	And write them out
+		set outFilePath to (infoFolder as string) & outputUUIDDefinitionsFileName
+		writeFileWithContents(outFilePath, outputContents)
+	end if
 	
 	--	Do JSON if desired
 	if (outputAsJSON) then
-		
 		--	Write the contents of the JSON out to the current folder as well
-		set outputContents to convertListtoJSON(infoList)
+		set outputContents to convertListToJSON(infoList)
 		set outFilePath to (infoFolder as string) & outputFileName & ".json"
-		if my checkExistence(outFilePath) then --Attempt to delete existing file
-			my deleteFile(outFilePath)
-		end if
-		try
-			set theFile to open for access outFilePath with write permission
-			write outputContents to theFile
-			close access theFile
-		on error
-			try
-				close access theFile
-			end try
-		end try
+		writeFileWithContents(outFilePath, outputContents)
 	end if
 	
 end run
@@ -71,41 +87,46 @@ on buildInfoListfromFolder(theInfoFolder)
 			set fileName to name of aFile
 		end tell
 		
-		--	Break that into the keys we need...
-		set AppleScript's text item delimiters to "-"
-		set osVersion to text item 1 of fileName
-		set infoType to text item 2 of fileName
-		if (count of text items of fileName) > 3 then
-			set otherDescription to text item 3 of fileName
-		else
-			set otherDescription to ""
-		end if
-		set AppleScript's text item delimiters to TID
-		
-		--	Ensure that this file is the correct type		
-		set executableName to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " CFBundleExecutable")
-		if (executableName is not equal to infoType) then
-			log "Mismatched type ['" & infoType & "'] for executable ['" & executableName & "']"
-		else
-			--	Then use defaults to get values out of each file
-			set bundleID to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " CFBundleIdentifier")
-			set shortVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " CFBundleShortVersionString")
-			set versionNumber to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " CFBundleVersion")
-			set uuid to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " PluginCompatibilityUUID")
+		--	Ensure that we skip any plist files that don't end with "Info.plist"
+		if (fileName ends with "-Info.plist") then
 			
-			--	Then branch for the other values based on the type
-			if (infoType is "Mail") then
-				set expectedVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " ExpectedMessageVersion")
-				set minimumOSVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " LSMinimumSystemVersion")
+			--	Break that into the keys we need...
+			set AppleScript's text item delimiters to "-"
+			set osVersion to text item 1 of fileName
+			set infoType to text item 2 of fileName
+			if (count of text items of fileName) > 3 then
+				set otherDescription to text item 3 of fileName
 			else
-				set expectedVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " ExpectedMailVersion")
-				set minimumOSVersion to ""
+				set otherDescription to ""
+			end if
+			set AppleScript's text item delimiters to TID
+			
+			--	Ensure that this file is the correct type		
+			set executableName to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " CFBundleExecutable")
+			if (executableName is not equal to infoType) then
+				log "Mismatched type ['" & infoType & "'] for executable ['" & executableName & "']"
+			else
+				--	Then use defaults to get values out of each file
+				set bundleID to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " CFBundleIdentifier")
+				set shortVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " CFBundleShortVersionString")
+				set versionNumber to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " CFBundleVersion")
+				set uuid to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " PluginCompatibilityUUID")
+				
+				--	Then branch for the other values based on the type
+				if (infoType is "Mail") then
+					set expectedVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " ExpectedMessageVersion")
+					set minimumOSVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " LSMinimumSystemVersion")
+				else
+					set expectedVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " ExpectedMailVersion")
+					set minimumOSVersion to ""
+				end if
+				
+				--	Add the record to our list
+				set end of infoList to ({fileName:fileName, osVersion:osVersion, otherDescription:otherDescription, bundleID:bundleID, shortVersion:shortVersion, versionNumber:versionNumber, uuid:uuid, expectedVersion:expectedVersion} as record)
+				
 			end if
 			
-			--	Add the record to our list
-			set end of infoList to ({fileName:fileName, osVersion:osVersion, otherDescription:otherDescription, bundleID:bundleID, shortVersion:shortVersion, versionNumber:versionNumber, uuid:uuid, expectedVersion:expectedVersion} as record)
-			
-		end if
+		end if --	Skipping files that aren't "-Info.plist"
 		
 	end repeat
 	
@@ -113,14 +134,14 @@ on buildInfoListfromFolder(theInfoFolder)
 end buildInfoListfromFolder
 
 
-on FilterMailInfo(theList)
+on filterMailInfo(theList)
 	return FilterInfo(theList, "com.apple.mail", "mail")
-end FilterMailInfo
+end filterMailInfo
 
 
-on FilterMessageInfo(theList)
+on filterMessageInfo(theList)
 	return FilterInfo(theList, "com.apple.MessageFramework", "message")
-end FilterMessageInfo
+end filterMessageInfo
 
 on FilterInfo(theList, bundleMatch, typeKey)
 	
@@ -144,7 +165,8 @@ on FilterInfo(theList, bundleMatch, typeKey)
 				
 				--	Write out previous grouping
 				if (uuid of previousRecord is not "") then
-					set end of versionList to ({startOS:startOS, endOS:EndVersionFromVersions(osVersion of previousRecord, osVersion of aRecord), type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord} as record)
+					log {startOS:startOS, endOS:endVersionFromVersions(osVersion of previousRecord, osVersion of aRecord), type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord}
+					set end of versionList to ({startOS:startOS, endOS:endVersionFromVersions(osVersion of previousRecord, osVersion of aRecord), type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord, versionNumber:versionNumber of previousRecord} as record)
 				end if
 				
 				--	Establish new values for this group
@@ -155,13 +177,14 @@ on FilterInfo(theList, bundleMatch, typeKey)
 			
 		end if
 	end repeat
-	set end of versionList to ({startOS:startOS, endOS:osVersion of aRecord, type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord} as record)
+	log {startOS:startOS, endOS:osVersion of aRecord, type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord}
+	set end of versionList to ({startOS:startOS, endOS:osVersion of aRecord, type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord, versionNumber:versionNumber of previousRecord} as record)
 	
 	return versionList
 end FilterInfo
 
 
-on EndVersionFromVersions(previousVersion, currentVersion)
+on endVersionFromVersions(previousVersion, currentVersion)
 	
 	if (currentVersion is equal to previousVersion) then
 		return currentVersion
@@ -184,22 +207,42 @@ on EndVersionFromVersions(previousVersion, currentVersion)
 	
 	return myVersion
 	
-end EndVersionFromVersions
+end endVersionFromVersions
 
 
 on sortByVersionNumber(theList)
 	repeat with i from 1 to (count of theList) - 1
 		repeat with j from i + 1 to count of theList
-			if versionNumber of item j of myList < versionNumber of item i of theList then
+			if versionNumber of item j of theList < versionNumber of item i of theList then
 				set temp to item i of theList
 				set item i of theList to item j of theList
 				set item j of theList to temp
 			end if
-			log theList
 		end repeat
 	end repeat
 	return theList
 end sortByVersionNumber
+
+on filterForOSStartingWith(theList, firstOSToSupport)
+	
+	--	Just return the list of there is no criteria
+	if firstOSToSupport is "" then
+		return theList
+	end if
+	
+	--	Otherwise set starting values
+	set resultList to {} as list
+	set foundStart to false
+	--	Look through list until we find a match and then add all the rest
+	repeat with infoItem in theList
+		if (foundStart or (osVersion of infoItem is equal to firstOSToSupport) or (osVersion of infoItem begins with firstOSToSupport)) then
+			set foundStart to true
+			set end of resultList to infoItem
+		end if
+	end repeat
+	
+	return resultList
+end filterForOSStartingWith
 
 
 on convertListToUUIDStringList(theList)
@@ -212,7 +255,7 @@ on convertListToUUIDStringList(theList)
 		
 		if (uuidList does not contain (uuid of mailInfo)) then
 			--	Build out the string contents
-			set infoData to infoData & "# For version " & (displayVersion of mailInfo) & "[" & (startOS of mailInfo) & "]" & " of " & (type of mailInfo) & return & (uuid of mailInfo) & return
+			set infoData to infoData & "# For " & (type of mailInfo) & " version " & (displayVersion of mailInfo) & " [OS X Version:" & (startOS of mailInfo) & "]" & return & (uuid of mailInfo) & return
 			
 			set end of uuidList to (uuid of mailInfo)
 		end if
@@ -223,7 +266,7 @@ on convertListToUUIDStringList(theList)
 	
 end convertListToUUIDStringList
 
-on convertListtoJSON(theList)
+on convertListToJSON(theList)
 	
 	-- use a repeat loop to loop over a list of something
 	set infoData to "{"
@@ -246,9 +289,75 @@ on convertListtoJSON(theList)
 	
 	return infoData
 	
-end convertListtoJSON
+end convertListToJSON
 
-on WriteFileWithContents(fileName, theContents)
+on convertListToPlistSection(theList)
+	
+	-- use a repeat loop to loop over a list of something
+	set infoData to ""
+	set uuidList to {} as list
+	set mailComparator to startingMailComparator
+	set messageComparator to startingMessageComparator
+	
+	repeat with mailInfo in theList
+		
+		if (uuidList does not contain (uuid of mailInfo)) then
+			
+			set comparator to 0
+			if (type of mailInfo is "mail") then
+				set mailComparator to mailComparator + 1
+				set comparator to mailComparator
+			else
+				set messageComparator to messageComparator + 1
+				set comparator to messageComparator
+			end if
+			
+			--	Build out the string contents
+			set infoData to infoData & "<key>" & uuid of mailInfo & "</key><dict>"
+			set infoData to infoData & "<key>earliest-os-version-display</key><string>" & startOS of mailInfo & "</string>"
+			set infoData to infoData & "<key>latest-os-version-display</key><string>" & endOS of mailInfo & "</string>"
+			set infoData to infoData & "<key>latest-version-comparator</key><integer>" & comparator & "</integer>"
+			set infoData to infoData & "<key>type</key><string>" & type of mailInfo & "</string>"
+			set infoData to infoData & "<key>type-version-display</key><string>" & displayVersion of mailInfo & "</string>"
+			set infoData to infoData & "<key>type-version</key><real>" & versionNumber of mailInfo & "</real>"
+			set infoData to infoData & "</dict>"
+			
+			set end of uuidList to (uuid of mailInfo)
+		end if
+		
+	end repeat
+	
+	return infoData
+	
+end convertListToPlistSection
+
+
+on createPlistOutputWithSections(sectionList)
+	set infoData to "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
+<dict>
+	<key>contents</key>
+	<dict>"
+	
+	repeat with aSection in sectionList
+		set infoData to infoData & aSection
+	end repeat
+	
+	set infoData to infoData & return & "	</dict>
+	<key>date</key>
+	<string>[(REPLACE THIS DATE AND SURROUNDING MARKUP USING date INSTEAD OF string)]</string>
+</dict>
+</plist>"
+	--	Date Format => 2012-11-02T16:00:00Z
+	
+	return infoData
+	
+end createPlistOutputWithSections
+
+
+
+on writeFileWithContents(fileName, theContents)
 	if my checkExistence(fileName) then --Attempt to delete existing file
 		my deleteFile(fileName)
 	end if
@@ -261,7 +370,7 @@ on WriteFileWithContents(fileName, theContents)
 			close access theFile
 		end try
 	end try
-end WriteFileWithContents
+end writeFileWithContents
 
 on checkExistence(fileOrFolderToCheck)
 	try
