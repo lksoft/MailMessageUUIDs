@@ -1,8 +1,9 @@
 --	Create a CSV file for import into a database
 
 property outputAsJSON : false
-property outputAsCSV : false
-property outputFileName : "ImportMailInfo"
+property outputFileName : "CompleteMailInfo"
+property outputUUIDListFileName : "SupportableUUIDList.txt"
+property outputUUIDDefinitionsFileName : "CompleteUUIDDefinitions.plist"
 
 on run
 	
@@ -16,8 +17,19 @@ on run
 	set infoList to buildInfoListfromFolder(infoFolder)
 	
 	--	Create sorted, unique lists of Mail and Message info
-	set uniqueMailInfo to FilterUniqueMailInfo(infoList)
-	set uniqueMessageInfo to FilterUniqueMessageInfo(infoList)
+	set completeMailInfo to FilterMailInfo(infoList)
+	set completeMessageInfo to FilterMessageInfo(infoList)
+	
+	--	Export a list of all of the UUIDs for both parts as simple file
+	if (outputUUIDListFileName is not equal to "") then
+		
+		--	Write the contents of all uuids as a simple list
+		set outputContents to "# All Mail UUIDs" & return & convertListToUUIDStringList(completeMailInfo)
+		set outputContents to outputContents & "# All Message UUIDs" & return & convertListToUUIDStringList(completeMessageInfo)
+		set outFilePath to (infoFolder as string) & outputUUIDListFileName
+		WriteFileWithContents(outFilePath, outputContents)
+	end if
+	
 	
 	--	Do JSON if desired
 	if (outputAsJSON) then
@@ -25,26 +37,6 @@ on run
 		--	Write the contents of the JSON out to the current folder as well
 		set outputContents to convertListtoJSON(infoList)
 		set outFilePath to (infoFolder as string) & outputFileName & ".json"
-		if my checkExistence(outFilePath) then --Attempt to delete existing file
-			my deleteFile(outFilePath)
-		end if
-		try
-			set theFile to open for access outFilePath with write permission
-			write outputContents to theFile
-			close access theFile
-		on error
-			try
-				close access theFile
-			end try
-		end try
-	end if
-	
-	--	Do CSV if desired
-	if (outputAsCSV) then
-		
-		--	Write the contents of the CSV out to the current folder as well
-		set outputContents to convertListtoCSV(infoList)
-		set outFilePath to (infoFolder as string) & outputFileName & ".csv"
 		if my checkExistence(outFilePath) then --Attempt to delete existing file
 			my deleteFile(outFilePath)
 		end if
@@ -121,21 +113,26 @@ on buildInfoListfromFolder(theInfoFolder)
 end buildInfoListfromFolder
 
 
-on FilterUniqueMailInfo(theList)
+on FilterMailInfo(theList)
+	return FilterInfo(theList, "com.apple.mail", "mail")
+end FilterMailInfo
+
+
+on FilterMessageInfo(theList)
+	return FilterInfo(theList, "com.apple.MessageFramework", "message")
+end FilterMessageInfo
+
+on FilterInfo(theList, bundleMatch, typeKey)
 	
-	log "START MAIL"
 	set versionList to {}
 	
 	set startOS to ""
-	set previousRecord to {uuid:""} as record
-	set previousOS to ""
-	set previousShortVersion to ""
-	set previousUUID to ""
+	set previousRecord to {osVersion:"", uuid:""} as record
 	
 	repeat with aRecord in theList
-		if (bundleID of aRecord is equal to "com.apple.mail") then
+		if (bundleID of aRecord is equal to bundleMatch) then
 			
-			log "osVersion=" & osVersion of aRecord & "  -- version=" & shortVersion of aRecord & "  --  uuid=" & uuid of aRecord
+			--	log "osVersion=" & osVersion of aRecord & "  -- version=" & shortVersion of aRecord & "  --  uuid=" & uuid of aRecord
 			
 			--	Ensure a basic start OS
 			if startOS is "" then
@@ -143,17 +140,11 @@ on FilterUniqueMailInfo(theList)
 			end if
 			
 			--	If the UUID has changed then also set the startOS
-			if ((uuid of aRecord) is not equal to uuid of previousRecord) then
+			if ((uuid of aRecord) is not equal to (uuid of previousRecord)) or ((shortVersion of aRecord) is not equal to (shortVersion of previousRecord)) then
 				
 				--	Write out previous grouping
 				if (uuid of previousRecord is not "") then
-					if (previousOS is "") then
-						set previousOS to (osVersion of aRecord)
-					end if
-					set newRecord to {startOS:startOS, endOS:(osVersion of previousRecord), type:"mail", displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord}
-					log return
-					log newRecord
-					log return
+					set end of versionList to ({startOS:startOS, endOS:EndVersionFromVersions(osVersion of previousRecord, osVersion of aRecord), type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord} as record)
 				end if
 				
 				--	Establish new values for this group
@@ -161,24 +152,39 @@ on FilterUniqueMailInfo(theList)
 			end if
 			
 			set previousRecord to aRecord
-			set previousOS to osVersion of aRecord
-			set previousUUID to uuid of aRecord
-			set previousShortVersion to shortVersion of aRecord
 			
 		end if
 	end repeat
-	set lastRecord to {startOS:startOS, endOS:(osVersion of previousRecord), type:"mail", displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord}
-	log return
-	log lastRecord
-	log return
-	log "END MAIL"
+	set end of versionList to ({startOS:startOS, endOS:osVersion of aRecord, type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord} as record)
 	
-end FilterUniqueMailInfo
+	return versionList
+end FilterInfo
 
 
-on FilterUniqueMessageInfo(theList)
+on EndVersionFromVersions(previousVersion, currentVersion)
 	
-end FilterUniqueMessageInfo
+	if (currentVersion is equal to previousVersion) then
+		return currentVersion
+	end if
+	
+	if (currentVersion ends with ".0") then
+		if (previousVersion is equal to "") then
+			return currentVersion
+		else
+			return previousVersion
+		end if
+	end if
+	
+	set TID to AppleScript's text item delimiters
+	set AppleScript's text item delimiters to "."
+	set versionParts to text items of currentVersion
+	set the last item of versionParts to ((last item of versionParts) - 1)
+	set myVersion to versionParts as string
+	set AppleScript's text item delimiters to TID
+	
+	return myVersion
+	
+end EndVersionFromVersions
 
 
 on sortByVersionNumber(theList)
@@ -196,21 +202,26 @@ on sortByVersionNumber(theList)
 end sortByVersionNumber
 
 
-on convertListtoCSV(theList)
+on convertListToUUIDStringList(theList)
 	
 	-- use a repeat loop to loop over a list of something
-	set infoData to quote & "filename" & quote & ", " & quote & "os_version" & quote & ", " & quote & "other_desc" & quote & ", " & quote & "bundle_id" & quote & ", " & quote & "short_version" & quote & ", " & quote & "version" & quote & ", " & quote & "uuid" & quote & ", " & quote & "other_expected_version" & quote & ", " & quote & "min_os_version" & quote
+	set infoData to ""
+	set uuidList to {} as list
 	
 	repeat with mailInfo in theList
 		
-		--	Build out the csv contents
-		set infoData to infoData & return & quote & (fileName of mailInfo) & quote & ", " & quote & (osVersion of mailInfo) & quote & ", " & quote & (otherDescription of mailInfo) & quote & ", " & quote & (bundleID of mailInfo) & quote & ", " & quote & (shortVersion of mailInfo) & quote & ", " & (versionNumber of mailInfo) & ", " & quote & (uuid of mailInfo) & quote & ", " & (expectedVersion of mailInfo)
+		if (uuidList does not contain (uuid of mailInfo)) then
+			--	Build out the string contents
+			set infoData to infoData & "# For version " & (displayVersion of mailInfo) & "[" & (startOS of mailInfo) & "]" & " of " & (type of mailInfo) & return & (uuid of mailInfo) & return
+			
+			set end of uuidList to (uuid of mailInfo)
+		end if
 		
 	end repeat
 	
 	return infoData
 	
-end convertListtoCSV
+end convertListToUUIDStringList
 
 on convertListtoJSON(theList)
 	
@@ -236,6 +247,21 @@ on convertListtoJSON(theList)
 	return infoData
 	
 end convertListtoJSON
+
+on WriteFileWithContents(fileName, theContents)
+	if my checkExistence(fileName) then --Attempt to delete existing file
+		my deleteFile(fileName)
+	end if
+	try
+		set theFile to open for access fileName with write permission
+		write theContents to theFile
+		close access theFile
+	on error
+		try
+			close access theFile
+		end try
+	end try
+end WriteFileWithContents
 
 on checkExistence(fileOrFolderToCheck)
 	try
