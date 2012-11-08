@@ -165,7 +165,7 @@ on FilterInfo(theList, bundleMatch, typeKey)
 				
 				--	Write out previous grouping
 				if (uuid of previousRecord is not "") then
-					log {startOS:startOS, endOS:endVersionFromVersions(osVersion of previousRecord, osVersion of aRecord), type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord}
+					--	log {startOS:startOS, endOS:endVersionFromVersions(osVersion of previousRecord, osVersion of aRecord), type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord}
 					set end of versionList to ({startOS:startOS, endOS:endVersionFromVersions(osVersion of previousRecord, osVersion of aRecord), type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord, versionNumber:versionNumber of previousRecord} as record)
 				end if
 				
@@ -177,7 +177,7 @@ on FilterInfo(theList, bundleMatch, typeKey)
 			
 		end if
 	end repeat
-	log {startOS:startOS, endOS:osVersion of aRecord, type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord}
+	--	log {startOS:startOS, endOS:osVersion of aRecord, type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord}
 	set end of versionList to ({startOS:startOS, endOS:osVersion of aRecord, type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord, versionNumber:versionNumber of previousRecord} as record)
 	
 	return versionList
@@ -299,7 +299,35 @@ on convertListToPlistSection(theList)
 	set mailComparator to startingMailComparator
 	set messageComparator to startingMessageComparator
 	
-	repeat with mailInfo in theList
+	--	Rebuild the list consolidating any duplicate records	
+	set startInfo to {uuid:"empty"} as record
+	set newList to {} as list
+	repeat with anInfo in theList
+		
+		--	For the first time, just assign the current record to the startInfo
+		if (uuid of startInfo is equal to "empty") then
+			set startInfo to anInfo
+		end if
+		
+		--	If we have a change of UUIDs, then write the last one
+		if (uuid of startInfo is not equal to uuid of anInfo) then
+			--	Add the record to the list
+			set end of newList to startInfo
+			--	log startInfo
+			--	Reset the start to the current one
+			set startInfo to anInfo
+		else
+			--	Else set the endOS from the start to that of the current
+			set the endOS of startInfo to endOS of anInfo
+			set the displayVersion of startInfo to displayVersion of anInfo
+		end if
+	end repeat
+	--	Add the last record to the list
+	--	log startInfo
+	set end of newList to startInfo
+	
+	--	Then write out the new list
+	repeat with mailInfo in newList
 		
 		if (uuidList does not contain (uuid of mailInfo)) then
 			
