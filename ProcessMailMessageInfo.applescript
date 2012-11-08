@@ -7,14 +7,21 @@ property outputUUIDDefinitionsFileName : "CompleteUUIDDefinitions.plist"
 property startingMailComparator : 50
 property startingMessageComparator : 550
 property endingComparator : 999999
+property outputComments : true
 
 on run argv
 	
 	--	Handle parameters
 	set startingOS to "10.6" --	default value
 	if ((count of argv) > 0) then
-		log "Got at least one parameter"
-		set startingOS to item 1 of argv
+		repeat with param in argv
+			if (param starts with "10.") then
+				set startingOS to param
+			end if
+			if ((param contains "nc") or (param contains "no" and param contains "comment")) then
+				set outputComments to false
+			end if
+		end repeat
 	end if
 	
 	--	Should get the contents from the current directory
@@ -35,8 +42,15 @@ on run argv
 	--	Export a list of all of the UUIDs for both parts as simple file
 	if (outputUUIDListFileName is not equal to "") then
 		--	Write the contents of all uuids as a simple list
-		set outputContents to "# All Mail UUIDs" & return & convertListToUUIDStringList(completeMailInfo)
-		set outputContents to outputContents & "# All Message UUIDs" & return & convertListToUUIDStringList(completeMessageInfo)
+		if outputComments then
+			set mailComment to "# All Mail UUIDs" & return
+			set messageComment to "# All Message UUIDs" & return
+		else
+			set mailComment to ""
+			set messageComment to ""
+		end if
+		set outputContents to mailComment & convertListToUUIDStringList(completeMailInfo)
+		set outputContents to outputContents & messageComment & convertListToUUIDStringList(completeMessageInfo)
 		set outFilePath to (infoFolder as string) & outputUUIDListFileName
 		writeFileWithContents(outFilePath, outputContents)
 	end if
@@ -255,7 +269,10 @@ on convertListToUUIDStringList(theList)
 		
 		if (uuidList does not contain (uuid of mailInfo)) then
 			--	Build out the string contents
-			set infoData to infoData & "# For " & (type of mailInfo) & " version " & (displayVersion of mailInfo) & " [OS X Version:" & (startOS of mailInfo) & "]" & return & (uuid of mailInfo) & return
+			if (outputComments) then
+				set infoData to infoData & "# For " & (type of mailInfo) & " version " & (displayVersion of mailInfo) & " [OS X Version:" & (startOS of mailInfo) & "]" & return
+			end if
+			set infoData to infoData & (uuid of mailInfo) & return
 			
 			set end of uuidList to (uuid of mailInfo)
 		end if
@@ -265,31 +282,6 @@ on convertListToUUIDStringList(theList)
 	return infoData
 	
 end convertListToUUIDStringList
-
-on convertListToJSON(theList)
-	
-	-- use a repeat loop to loop over a list of something
-	set infoData to "{"
-	set counter to 0
-	
-	repeat with mailInfo in theList
-		
-		--	Build out the json contents
-		set comma to ","
-		if counter is 0 then
-			set comma to ""
-		end if
-		set infoData to infoData & comma & return & quote & (fileName of mailInfo) & quote & ": {" & return & "\"osVersion\": \"" & (osVersion of mailInfo) & "\"," & return & "\"otherDescription\": \"" & (otherDescription of mailInfo) & "\"," & return & "\"bundleID\": \"" & (bundleID of mailInfo) & "\"," & return & "\"shortVersion\": \"" & (shortVersion of mailInfo) & "\"," & return & "\"version\": " & (versionNumber of mailInfo) & "," & return & "\"uuid\": \"" & (uuid of mailInfo) & "\"," & return & "\"otherExpectedVersion\": " & (expectedVersion of mailInfo) & return & "}"
-		
-		--	Increment our counter
-		set counter to counter + 1
-	end repeat
-	
-	set infoData to infoData & return & "}"
-	
-	return infoData
-	
-end convertListToJSON
 
 on convertListToPlistSection(theList)
 	
@@ -358,6 +350,31 @@ on convertListToPlistSection(theList)
 	return infoData
 	
 end convertListToPlistSection
+
+on convertListToJSON(theList)
+	
+	-- use a repeat loop to loop over a list of something
+	set infoData to "{"
+	set counter to 0
+	
+	repeat with mailInfo in theList
+		
+		--	Build out the json contents
+		set comma to ","
+		if counter is 0 then
+			set comma to ""
+		end if
+		set infoData to infoData & comma & return & quote & (fileName of mailInfo) & quote & ": {" & return & "\"osVersion\": \"" & (osVersion of mailInfo) & "\"," & return & "\"otherDescription\": \"" & (otherDescription of mailInfo) & "\"," & return & "\"bundleID\": \"" & (bundleID of mailInfo) & "\"," & return & "\"shortVersion\": \"" & (shortVersion of mailInfo) & "\"," & return & "\"version\": " & (versionNumber of mailInfo) & "," & return & "\"uuid\": \"" & (uuid of mailInfo) & "\"," & return & "\"otherExpectedVersion\": " & (expectedVersion of mailInfo) & return & "}"
+		
+		--	Increment our counter
+		set counter to counter + 1
+	end repeat
+	
+	set infoData to infoData & return & "}"
+	
+	return infoData
+	
+end convertListToJSON
 
 
 on createPlistOutputWithSections(sectionList)
