@@ -18,7 +18,7 @@ on run argv
 	
 	--	Get the proper output file to use	
 	if (isTesting) then
-		set infoPlistFilePath to (scriptFolder as string) & "testInfo.plist"
+		set infoPlistFilePath to (POSIX path of ((scriptFolder as string) & "testInfo.plist"))
 	else
 		--	Get the info plist file path from the arguments
 		if ((count of argv) > 0) then
@@ -31,7 +31,7 @@ on run argv
 	
 	--	Try to remove all of the existing values, if there are any
 	try
-		do shell script "defaults delete " & quote & (POSIX path of (infoPlistFilePath as alias)) & quote & " SupportedPluginCompatibilityUUIDs"
+		do shell script "defaults delete " & quote & infoPlistFilePath & quote & " SupportedPluginCompatibilityUUIDs"
 	on error
 		--	Don't do anything
 	end try
@@ -47,7 +47,7 @@ on run argv
 		
 		--	For each line that is not empty, add that to the array of the SupportedUUIDList in the InfoPlist file
 		if (length of aUUID is not 0) then
-			do shell script "defaults write " & quote & (POSIX path of (infoPlistFilePath as alias)) & quote & " SupportedPluginCompatibilityUUIDs -array-add '" & aUUID & "'"
+			do shell script "defaults write " & quote & infoPlistFilePath & quote & " SupportedPluginCompatibilityUUIDs -array-add '" & aUUID & "'"
 		end if
 		
 	end repeat
