@@ -28,10 +28,11 @@ on run argv
 	tell application "Finder"
 		set scriptPath to path to me
 		set infoFolder to container of scriptPath
+		set plistFolder to ((infoFolder as string) & "PlistFolder:" as alias)
 	end tell
 	
 	--	Get the info lists, sort it and filter based on OS requirements
-	set infoList to buildInfoListfromFolder(infoFolder)
+	set infoList to buildInfoListfromFolder(plistFolder)
 	set infoList to sortByVersionNumber(infoList)
 	set filteredInfoList to filterForOSStartingWith(infoList, startingOS)
 	
