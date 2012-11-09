@@ -1,7 +1,7 @@
 --	Use this script to insert the UUID list into an Info.pist file
 
 property uuidListFileName : "SupportableUUIDList.txt"
-property isTesting : true
+property isTesting : false
 
 on run argv
 	
