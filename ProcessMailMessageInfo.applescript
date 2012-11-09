@@ -1,4 +1,4 @@
---	Create a CSV file for import into a database
+--	Create UUID text file and Definitions for MPM
 
 property outputAsJSON : false
 property outputAsDefinitions : false
@@ -6,7 +6,7 @@ property outputFileName : "CompleteMailInfo"
 property outputUUIDListFileName : "SupportableUUIDList.txt"
 property outputUUIDDefinitionsFileName : "CompleteUUIDDefinitions.plist"
 property startingMailComparator : 50
-property startingMessageComparator : 550
+property startingMessageComparator : 1000
 property endingComparator : 999999
 property outputComments : true
 
@@ -275,7 +275,7 @@ on convertListToUUIDStringList(theList)
 		if (uuidList does not contain (uuid of mailInfo)) then
 			--	Build out the string contents
 			if (outputComments) then
-				set infoData to infoData & "# For " & (type of mailInfo) & " version " & (displayVersion of mailInfo) & " [OS X Version:" & (startOS of mailInfo) & "]" & return
+				set infoData to infoData & "# For " & (type of mailInfo) & " version " & (displayVersion of mailInfo) & " on OS X Version " & (startOS of mailInfo) & return
 			end if
 			set infoData to infoData & (uuid of mailInfo) & return
 			
