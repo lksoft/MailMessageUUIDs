@@ -37,46 +37,7 @@ This applescript takes a single required argument, which is the path to your pro
 
 ### Putting it all together
 
-Here is an example script that could be used to do this:
+Finally there is a working example script included that you could just call directly from your Build Phases, which is what I do. If you want to limit the versions that you support or remove the comments, you'll need to change the `ProcessMailMessageInfo` line to add that info, but otherwise it should work as is. The script name is `GetLatestIntoPlugin.sh`.
 
-	#	Ignore if we are cleaning
-	if [[ -n $ACTION && $ACTION = "clean" ]]; then
-		echo "Ignoring during clean"
-		exit 0
-	fi
-	
-	#	Set the locations
-	export MY_UUID_REPO_NAME="MailMessageUUIDs"
-	export MY_UUID_REPO="$SRCROOT/../$MY_UUID_REPO_NAME"
-	
-	#	Go into the MailMessagesUUIDs folder and ensure that it is up-to-date
-	if [ ! -d "$MY_UUID_REPO" ]; then
-		echo "UUID Script ERROR - The $MY_UUID_REPO_NAME submodule doesn't exist!!"
-		exit 1
-	fi
-	cd "$MY_UUID_REPO"
-	BRANCH=`git status | grep "branch" | cut -c 13-`
-	IS_CLEAN=`git status | grep "nothing" | cut -c 1-17`
-	if [ $BRANCH != "master" ]; then
-		echo "UUID Script ERROR - $MY_UUID_REPO_NAME needs to be on the master branch"
-		exit 2
-	fi
-	if [[ -z $IS_CLEAN || $IS_CLEAN != "nothing to commit" ]]; then
-		echo "UUID Script ERROR - $MY_UUID_REPO_NAME needs have a clean status"
-		exit 3
-	fi
-	git pull
-	
-	
-	#	Run the script there that generates the UUID list file
-	echo "Generating UUID list file"
-	/usr/bin/osascript "ProcessMailMessageInfo.applescript"
-	
-	
-	#	Run the other script that will update my Info.plist file
-	echo "Updating Info.plist file"
-	/usr/bin/osascript "UpdateInfoPlist.applescript" "$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH"
-
-This will delete and replace the entire `SupportedPluginCompatibilityUUIDs` array in the Info.plist with the values in the UUID text file.
-
+This script will delete and replace the entire `SupportedPluginCompatibilityUUIDs` array in the Info.plist with the values in the UUID text file.
 
