@@ -1,4 +1,4 @@
-# Mail and MessageFramework UUID Manangement
+# Mail and MessageFramework UUID Management
 
 This repository just helps facilitate maintaining and updating all of the UUIDs when Apple changes them in Mail and MessageFramework.
 
