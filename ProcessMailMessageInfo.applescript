@@ -1,6 +1,7 @@
 --	Create a CSV file for import into a database
 
 property outputAsJSON : false
+property outputAsDefinitions : false
 property outputFileName : "CompleteMailInfo"
 property outputUUIDListFileName : "SupportableUUIDList.txt"
 property outputUUIDDefinitionsFileName : "CompleteUUIDDefinitions.plist"
@@ -20,6 +21,9 @@ on run argv
 			end if
 			if ((param contains "nc") or (param contains "no" and param contains "comment")) then
 				set outputComments to false
+			end if
+			if (param contains "defs") then
+				set outputAsDefinitions to true
 			end if
 		end repeat
 	end if
@@ -57,7 +61,7 @@ on run argv
 	end if
 	
 	--	If we should create the UUID Definitions file
-	if (outputUUIDDefinitionsFileName is not equal to "") then
+	if (outputAsDefinitions and outputUUIDDefinitionsFileName is not equal to "") then
 		--	Then refilter the info without OS filtering
 		set completeMailInfo to filterMailInfo(infoList)
 		set completeMessageInfo to filterMessageInfo(infoList)
