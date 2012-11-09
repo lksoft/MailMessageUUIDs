@@ -10,7 +10,7 @@ When Apple comes out with a new system version, I only have to add the two `plis
 
 ##	How do I call the Script?
 
-Simply call it as any applescript. It can take 2 parameters, both of which are optional. One is for the OS version you want to start with (formatted as `10.x` or `10.x.y`) and the second is a parameter to suppress comments added to the output text file describing each UUID value (`-nc` or `-nocomment`).
+Simply call it as any applescript. It can take 2 parameters, both of which are optional. One is for the OS version you want to start with (formatted as `10.x` or `10.x.y`) and the second is a parameter to suppress comments added to the output text file describing each UUID value (`-nc`).
 
 Examples:
 

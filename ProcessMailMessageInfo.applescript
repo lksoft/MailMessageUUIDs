@@ -19,7 +19,7 @@ on run argv
 			if (param starts with "10.") then
 				set startingOS to param
 			end if
-			if ((param contains "nc") or (param contains "no" and param contains "comment")) then
+			if (param contains "nc") then
 				set outputComments to false
 			end if
 			if (param contains "defs") then
