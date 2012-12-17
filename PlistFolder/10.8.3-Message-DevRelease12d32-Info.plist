@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>BuildMachineOSBuild</key>
-	<string>12D32</string>
+	<string>12D26</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
@@ -21,7 +21,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1502</string>
+	<string>1501</string>
 	<key>DTCompiler</key>
 	<string></string>
 	<key>DTPlatformBuild</key>
@@ -29,7 +29,7 @@
 	<key>DTPlatformVersion</key>
 	<string>GM</string>
 	<key>DTSDKBuild</key>
-	<string>12D32</string>
+	<string>12D26</string>
 	<key>DTSDKName</key>
 	<string></string>
 	<key>DTXcode</key>
@@ -37,7 +37,7 @@
 	<key>DTXcodeBuild</key>
 	<string>4F250</string>
 	<key>ExpectedMailVersion</key>
-	<string>1502</string>
+	<string>1501</string>
 	<key>PluginCompatibilityUUID</key>
 	<string>1146A009-E373-4DB6-AB4D-47E59A7E50FD</string>
 </dict>
