@@ -24,7 +24,7 @@ if [ ! -d "$MY_UUID_REPO" ]; then
 	exit 1
 fi
 cd "$MY_UUID_REPO"
-git checkout master
+git checkout -q master
 BRANCH=`git status | grep "# On branch" | cut -c 13-`
 if [ "$BRANCH" != "master" ]; then
 	echo "UUID Script ERROR - $MY_UUID_REPO_NAME needs to be on the master branch - I can't seem to change to it"
