@@ -12,6 +12,8 @@ if [[ -n $ACTION && $ACTION = "clean" ]]; then
 	exit 0
 fi
 
+SRCROOT='.'
+
 #	Set the locations
 export MY_UUID_REPO_NAME="MailMessageUUIDs"
 export MY_UUID_REPO="$SRCROOT/../$MY_UUID_REPO_NAME"
@@ -22,17 +24,18 @@ if [ ! -d "$MY_UUID_REPO" ]; then
 	exit 1
 fi
 cd "$MY_UUID_REPO"
-BRANCH=`git status | grep "branch" | cut -c 13-`
-IS_CLEAN=`git status | grep "nothing" | cut -c 1-17`
-if [ $BRANCH != "master" ]; then
-	echo "UUID Script ERROR - $MY_UUID_REPO_NAME needs to be on the master branch"
+git checkout -q master
+BRANCH=`git status | grep "# On branch" | cut -c 13-`
+if [ "$BRANCH" != "master" ]; then
+	echo "UUID Script ERROR - $MY_UUID_REPO_NAME needs to be on the master branch - I can't seem to change to it"
 	exit 2
 fi
-if [[ -z $IS_CLEAN || $IS_CLEAN != "nothing to commit" ]]; then
+IS_CLEAN=`git status | grep "nothing" | cut -c 1-17`
+if [[ -z $IS_CLEAN || "$IS_CLEAN" != "nothing to commit" ]]; then
 	echo "UUID Script ERROR - $MY_UUID_REPO_NAME needs have a clean status"
 	exit 3
 fi
-git pull
+git pull origin master
 
 
 #	Run the script there that generates the UUID list file

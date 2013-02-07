@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BuildMachineOSBuild</key>
+<<<<<<< HEAD
+	<string>12D55</string>
+=======
+	<string>12D32</string>
+>>>>>>> 70a160734c54e5c5a4862b1538241a64070be77c
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>Message</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.apple.MessageFramework</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Message</string>
+	<key>CFBundlePackageType</key>
+	<string>FMWK</string>
+	<key>CFBundleShortVersionString</key>
+	<string>6.0</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+<<<<<<< HEAD
+	<string>1503</string>
+=======
+	<string>1502</string>
+>>>>>>> 70a160734c54e5c5a4862b1538241a64070be77c
+	<key>DTCompiler</key>
+	<string></string>
+	<key>DTPlatformBuild</key>
+	<string>4F250</string>
+	<key>DTPlatformVersion</key>
+	<string>GM</string>
+	<key>DTSDKBuild</key>
+<<<<<<< HEAD
+	<string>12D55</string>
+=======
+	<string>12D32</string>
+>>>>>>> 70a160734c54e5c5a4862b1538241a64070be77c
+	<key>DTSDKName</key>
+	<string></string>
+	<key>DTXcode</key>
+	<string>0440</string>
+	<key>DTXcodeBuild</key>
+	<string>4F250</string>
+	<key>ExpectedMailVersion</key>
+<<<<<<< HEAD
+	<string>1503</string>
+=======
+	<string>1502</string>
+>>>>>>> 70a160734c54e5c5a4862b1538241a64070be77c
+	<key>PluginCompatibilityUUID</key>
+	<string>1146A009-E373-4DB6-AB4D-47E59A7E50FD</string>
+</dict>
+</plist>
