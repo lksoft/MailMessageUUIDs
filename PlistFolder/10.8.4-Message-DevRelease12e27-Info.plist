@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BuildMachineOSBuild</key>
+	<string>12E14</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>Message</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.apple.MessageFramework</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.3</string>
+	<key>CFBundleName</key>
+	<string>Message</string>
+	<key>CFBundlePackageType</key>
+	<string>FMWK</string>
+	<key>CFBundleShortVersionString</key>
+	<string>6.4</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>1506</string>
+	<key>DTCompiler</key>
+	<string></string>
+	<key>DTPlatformBuild</key>
+	<string>4F250</string>
+	<key>DTPlatformVersion</key>
+	<string>GM</string>
+	<key>DTSDKBuild</key>
+	<string>12E14</string>
+	<key>DTSDKName</key>
+	<string></string>
+	<key>DTXcode</key>
+	<string>0440</string>
+	<key>DTXcodeBuild</key>
+	<string>4F250</string>
+	<key>ExpectedMailVersion</key>
+	<string>1506</string>
+	<key>PluginCompatibilityUUID</key>
+	<string>1B8BEB55-7CDB-44D1-A2D0-20C2D3449417</string>
+</dict>
+</plist>
