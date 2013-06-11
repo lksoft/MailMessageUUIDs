@@ -133,10 +133,18 @@ on buildInfoListfromFolder(theInfoFolder)
 				
 				--	Then branch for the other values based on the type
 				if (infoType is "Mail") then
-					set expectedVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " ExpectedMessageVersion")
+					try
+						set expectedVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " ExpectedMessageVersion")
+					on error errMsg
+						set expectedVersion to "n/a"
+					end try
 					set minimumOSVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " LSMinimumSystemVersion")
 				else
-					set expectedVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " ExpectedMailVersion")
+					try
+						set expectedVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " ExpectedMailVersion")
+					on error errorMsg
+						set expectedVersion to "n/a"
+					end try
 					set minimumOSVersion to ""
 				end if
 				
