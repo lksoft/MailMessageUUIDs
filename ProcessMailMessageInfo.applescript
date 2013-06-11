@@ -125,31 +125,38 @@ on buildInfoListfromFolder(theInfoFolder)
 			if (executableName is not equal to infoType) then
 				log "Mismatched type ['" & infoType & "'] for executable ['" & executableName & "']"
 			else
-				--	Then use defaults to get values out of each file
-				set bundleID to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " CFBundleIdentifier")
-				set shortVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " CFBundleShortVersionString")
-				set versionNumber to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " CFBundleVersion")
-				set uuid to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " PluginCompatibilityUUID")
-				
-				--	Then branch for the other values based on the type
-				if (infoType is "Mail") then
-					try
-						set expectedVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " ExpectedMessageVersion")
-					on error errMsg
-						set expectedVersion to "n/a"
-					end try
-					set minimumOSVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " LSMinimumSystemVersion")
-				else
-					try
-						set expectedVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " ExpectedMailVersion")
-					on error errorMsg
-						set expectedVersion to "n/a"
-					end try
-					set minimumOSVersion to ""
+				--	First see if the file has a PluginCompatibilityID
+				try
+					set uuid to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " PluginCompatibilityUUID")
+				on error errMsg
+					set uuid to ""
+				end try
+				if (uuid is not "") then
+					--	Then use defaults to get values out of each file
+					set bundleID to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " CFBundleIdentifier")
+					set shortVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " CFBundleShortVersionString")
+					set versionNumber to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " CFBundleVersion")
+					
+					--	Then branch for the other values based on the type
+					if (infoType is "Mail") then
+						try
+							set expectedVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " ExpectedMessageVersion")
+						on error errMsg
+							set expectedVersion to "n/a"
+						end try
+						set minimumOSVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " LSMinimumSystemVersion")
+					else
+						try
+							set expectedVersion to do shell script ("defaults read " & quote & (POSIX path of aFile) & quote & " ExpectedMailVersion")
+						on error errorMsg
+							set expectedVersion to "n/a"
+						end try
+						set minimumOSVersion to ""
+					end if
+					
+					--	Add the record to our list
+					set end of infoList to ({fileName:fileName, osVersion:osVersion, otherDescription:otherDescription, bundleID:bundleID, shortVersion:shortVersion, versionNumber:versionNumber, uuid:uuid, expectedVersion:expectedVersion} as record)
 				end if
-				
-				--	Add the record to our list
-				set end of infoList to ({fileName:fileName, osVersion:osVersion, otherDescription:otherDescription, bundleID:bundleID, shortVersion:shortVersion, versionNumber:versionNumber, uuid:uuid, expectedVersion:expectedVersion} as record)
 				
 			end if
 			
