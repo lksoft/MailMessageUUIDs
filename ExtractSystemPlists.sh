@@ -21,5 +21,5 @@ fi
 if [[ -f $MAIL_PATH ]]; then
 	echo "Extracting Mail plist"
 #	echo "Extraction path is: '$OS_VERSION-Mail-$INFO_SECTION.plist'"
-	cp "$MESSAGE_PATH" "$OS_VERSION-Mail-$INFO_SECTION.plist"
+	cp "$MAIL_PATH" "$OS_VERSION-Mail-$INFO_SECTION.plist"
 fi
