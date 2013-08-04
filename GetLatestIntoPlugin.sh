@@ -14,9 +14,16 @@ fi
 
 SRCROOT='.'
 
+# if script is called with absolute path, take repo path from it
+BASEDIR=$(dirname $0)
+
 #	Set the locations
 export MY_UUID_REPO_NAME="MailMessageUUIDs"
-export MY_UUID_REPO="$SRCROOT/../$MY_UUID_REPO_NAME"
+if [[ -d "$BASEDIR" ]]; then
+    export MY_UUID_REPO="$BASEDIR"
+else
+    export MY_UUID_REPO="$SRCROOT/../$MY_UUID_REPO_NAME"
+fi
 
 #	Go into the MailMessagesUUIDs folder and ensure that it is up-to-date
 if [ ! -d "$MY_UUID_REPO" ]; then
@@ -58,7 +65,7 @@ if [[ $NEEDS_BUILD == 1 ]]; then
 	IS_CLEAN=`git status | grep "nothing" | cut -c 1-17`
 	if [[ -z $IS_CLEAN || "$IS_CLEAN" != "nothing to commit" ]]; then
 		echo "UUID Script ERROR - $MY_UUID_REPO_NAME needs have a clean status"
-		exit 3
+		#exit 3
 	fi
 	git pull origin master
 
