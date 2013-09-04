@@ -54,8 +54,8 @@ on run argv
 			set mailComment to ""
 			set messageComment to ""
 		end if
-		set outputContents to mailComment & convertListToUUIDStringList(completeMailInfo)
-		set outputContents to outputContents & messageComment & convertListToUUIDStringList(completeMessageInfo)
+		set outputContents to messageComment & convertListToUUIDStringList(completeMessageInfo)
+		set outputContents to outputContents & mailComment & convertListToUUIDStringList(completeMailInfo)
 		set outFilePath to (infoFolder as string) & outputUUIDListFileName
 		writeFileWithContents(outFilePath, outputContents)
 	end if
@@ -152,7 +152,7 @@ on buildInfoListfromFolder(theInfoFolder)
 						end try
 						set minimumOSVersion to ""
 					end if
-				log "expectedVersion value now contains: " & expectedVersion
+					log "expectedVersion value now contains: " & expectedVersion
 					
 					--	Add the record to our list
 					set end of infoList to ({fileName:fileName, osVersion:osVersion, otherDescription:otherDescription, bundleID:bundleID, shortVersion:shortVersion, versionNumber:versionNumber, uuid:uuid, expectedVersion:expectedVersion} as record)
@@ -428,7 +428,7 @@ on writeFileWithContents(fileName, theContents)
 	end if
 	try
 		set theFile to open for access fileName with write permission
-		write theContents to theFile
+		write theContents to theFile as text
 		close access theFile
 	on error
 		try
