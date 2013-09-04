@@ -152,7 +152,6 @@ on buildInfoListfromFolder(theInfoFolder)
 						end try
 						set minimumOSVersion to ""
 					end if
-					log "expectedVersion value now contains: " & expectedVersion
 					
 					--	Add the record to our list
 					set end of infoList to ({fileName:fileName, osVersion:osVersion, otherDescription:otherDescription, bundleID:bundleID, shortVersion:shortVersion, versionNumber:versionNumber, uuid:uuid, expectedVersion:expectedVersion} as record)
