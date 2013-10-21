@@ -72,7 +72,7 @@ if [[ $NEEDS_BUILD == 1 ]]; then
 
 	#	Run the script there that generates the UUID list file
 	echo "Generating UUID list file"
-	/usr/bin/osascript "ProcessMailMessageInfo.applescript"
+	/usr/bin/osascript "ProcessMailMessageInfo.applescript" $@
 
 fi	# End of if we should rebuild
 
