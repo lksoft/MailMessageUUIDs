@@ -14,8 +14,15 @@ on run argv
 	
 	--	Handle parameters
 	set startingOS to "10.6" --	default value
+	set endingOS to "" --	default value
 	if ((count of argv) > 0) then
 		repeat with param in argv
+			if (param starts with "lt=") then
+				set TID to AppleScript's text item delimiters
+				set AppleScript's text item delimiters to "="
+				set endingOS to text item 2 of param
+				set AppleScript's text item delimiters to TID
+			end if
 			if (param starts with "10.") then
 				set startingOS to param
 			end if
@@ -38,7 +45,7 @@ on run argv
 	--	Get the info lists, sort it and filter based on OS requirements
 	set infoList to buildInfoListfromFolder(plistFolder)
 	set infoList to sortByVersionNumber(infoList)
-	set filteredInfoList to filterForOSStartingWith(infoList, startingOS)
+	set filteredInfoList to filterForOSesWith(infoList, startingOS, endingOS)
 	
 	--	Create sorted, unique lists of Mail and Message info
 	set completeMailInfo to filterMailInfo(filteredInfoList)
@@ -106,8 +113,8 @@ on buildInfoListfromFolder(theInfoFolder)
 			set fileName to name of aFile
 		end tell
 		
-		--	Ensure that we skip any plist files that don't end with "Info.plist"
-		if (fileName ends with "-Info.plist") then
+		--	Ensure that we skip any plist files that don't end with "info.plist"
+		if (fileName ends with "-info.plist") then
 			
 			--	Break that into the keys we need...
 			set AppleScript's text item delimiters to "-"
@@ -199,7 +206,7 @@ on FilterInfo(theList, bundleMatch, typeKey)
 				--	Write out previous grouping
 				if (uuid of previousRecord is not "") then
 					--	log {startOS:startOS, endOS:endVersionFromVersions(osVersion of previousRecord, osVersion of aRecord), type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord}
-					set end of versionList to ({startOS:startOS, endOS:endVersionFromVersions(osVersion of previousRecord, osVersion of aRecord), type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord, versionNumber:versionNumber of previousRecord} as record)
+					set end of versionList to ({startOS:startOS, endOS:endVersionFromVersions(osVersion of previousRecord, osVersion of aRecord), type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord, versionNumber:versionNumber of previousRecord, otherDescription:otherDescription of previousRecord} as record)
 				end if
 				
 				--	Establish new values for this group
@@ -211,7 +218,7 @@ on FilterInfo(theList, bundleMatch, typeKey)
 		end if
 	end repeat
 	--	log {startOS:startOS, endOS:osVersion of aRecord, type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord}
-	set end of versionList to ({startOS:startOS, endOS:osVersion of aRecord, type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord, versionNumber:versionNumber of previousRecord} as record)
+	set end of versionList to ({startOS:startOS, endOS:osVersion of aRecord, type:typeKey, displayVersion:(shortVersion of previousRecord), uuid:uuid of previousRecord, versionNumber:versionNumber of previousRecord, otherDescription:otherDescription of previousRecord} as record)
 	
 	return versionList
 end FilterInfo
@@ -256,10 +263,10 @@ on sortByVersionNumber(theList)
 	return theList
 end sortByVersionNumber
 
-on filterForOSStartingWith(theList, firstOSToSupport)
+on filterForOSesWith(theList, firstOSToSupport, lessThanOSToSupport)
 	
 	--	Just return the list of there is no criteria
-	if firstOSToSupport is "" then
+	if ((firstOSToSupport is "") and (lessThanOSToSupport is "")) then
 		return theList
 	end if
 	
@@ -268,6 +275,9 @@ on filterForOSStartingWith(theList, firstOSToSupport)
 	set foundStart to false
 	--	Look through list until we find a match and then add all the rest
 	repeat with infoItem in theList
+		if ((osVersion of infoItem is equal to lessThanOSToSupport) or (osVersion of infoItem begins with lessThanOSToSupport)) then
+			exit repeat
+		end if
 		if (foundStart or (osVersion of infoItem is equal to firstOSToSupport) or (osVersion of infoItem begins with firstOSToSupport)) then
 			set foundStart to true
 			set end of resultList to infoItem
@@ -275,7 +285,7 @@ on filterForOSStartingWith(theList, firstOSToSupport)
 	end repeat
 	
 	return resultList
-end filterForOSStartingWith
+end filterForOSesWith
 
 
 on convertListToUUIDStringList(theList)
@@ -289,7 +299,11 @@ on convertListToUUIDStringList(theList)
 		if (uuidList does not contain (uuid of mailInfo)) then
 			--	Build out the string contents
 			if (outputComments) then
-				set infoData to infoData & "# For " & (type of mailInfo) & " version " & (displayVersion of mailInfo) & " on OS X Version " & (startOS of mailInfo) & return
+				set buildInfo to ""
+				if ((otherDescription of mailInfo) is not "") then
+					set buildInfo to " (build " & (otherDescription of mailInfo) & ")"
+				end if
+				set infoData to infoData & "# For " & (type of mailInfo) & " version " & (displayVersion of mailInfo) & " (" & (versionNumber of mailInfo) & ") on OS X Version " & (startOS of mailInfo) & buildInfo & return
 			end if
 			set infoData to infoData & (uuid of mailInfo) & return
 			
