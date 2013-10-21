@@ -303,7 +303,7 @@ on convertListToUUIDStringList(theList)
 				if ((otherDescription of mailInfo) is not "") then
 					set buildInfo to " (build " & (otherDescription of mailInfo) & ")"
 				end if
-				set infoData to infoData & "# For " & (type of mailInfo) & " version " & (displayVersion of mailInfo) & " (" & (versionNumber of mailInfo) & ") on OS X Version " & (startOS of mailInfo) & buildInfo & return
+				set infoData to infoData & "'# For " & (type of mailInfo) & " version " & (displayVersion of mailInfo) & " (" & (versionNumber of mailInfo) & ") on OS X Version " & (startOS of mailInfo) & buildInfo & "'" & return
 			end if
 			set infoData to infoData & (uuid of mailInfo) & return
 			

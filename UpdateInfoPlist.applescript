@@ -47,7 +47,8 @@ on run argv
 		
 		--	For each line that is not empty, add that to the array of the SupportedUUIDList in the InfoPlist file
 		if (length of aUUID is not 0) then
-			do shell script "defaults write " & quote & infoPlistFilePath & quote & " SupportedPluginCompatibilityUUIDs -array-add '" & aUUID & "'"
+			
+			do shell script "defaults write " & quote & infoPlistFilePath & quote & " SupportedPluginCompatibilityUUIDs -array-add " & quote & aUUID & quote
 		end if
 		
 	end repeat
