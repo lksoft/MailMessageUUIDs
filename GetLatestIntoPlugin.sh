@@ -57,13 +57,12 @@ if [[ $NEEDS_BUILD == 1 ]]; then
 	echo "Ensuring that the files are up-to-date."
 
 	git checkout -q master
-	BRANCH=`git status | grep "# On branch" | cut -c 13-`
+	BRANCH=`git branch | sed -n -e 's/^\* \(.*\)/\1/p'`
 	if [ "$BRANCH" != "master" ]; then
 		echo "UUID Script ERROR - $MY_UUID_REPO_NAME needs to be on the master branch - I can't seem to change to it"
 		exit 2
 	fi
-	IS_CLEAN=`git status | grep "nothing" | cut -c 1-17`
-	if [[ -z $IS_CLEAN || "$IS_CLEAN" != "nothing to commit" ]]; then
+	if [ -n "$(git status --porcelain)" ]; then
 		echo "UUID Script ERROR - $MY_UUID_REPO_NAME needs have a clean status"
 		exit 3
 	fi
