@@ -57,7 +57,7 @@ if [[ $NEEDS_BUILD == 1 ]]; then
 	echo "Ensuring that the files are up-to-date."
 
 	git checkout -q master
-	BRANCH=`git branch | sed -n -e 's/^\* \(.*\)/\1/p'`
+	BRANCH=`git rev-parse --abbrev-ref HEAD`
 	if [ "$BRANCH" != "master" ]; then
 		echo "UUID Script ERROR - $MY_UUID_REPO_NAME needs to be on the master branch - I can't seem to change to it"
 		exit 2
