@@ -34,7 +34,7 @@ cd "$MY_UUID_REPO"
 
 NEEDS_BUILD=1
 IS_RELEASE=0
-if [[ "$CONFIGURATION" == "Release" ]]; then
+if [[ "$CONFIGURATION" == Release* ]]; then
 	IS_RELEASE=1
 fi
 if [[ -f "SupportableUUIDList.txt" && ($IS_RELEASE == 0) ]]; then
