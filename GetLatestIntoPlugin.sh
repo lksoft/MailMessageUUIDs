@@ -39,14 +39,20 @@ if [[ "$CONFIGURATION" == Release* ]]; then
 fi
 if [[ -f "SupportableUUIDList.txt" && ($IS_RELEASE == 0) ]]; then
 	
-	#	If the latest supported file is newer than any local commits, go ahead and indicate that a build isn't needed
-	DATE_FORMAT="%a %b %d %T %Y"
-	LAST_PLIST_COMMIT_DATE=`git log -1 --format=%cd PlistFolder/*`
-	SUPPORTABLE_FILE_DATE=`python -c "import os,time; print time.ctime(os.path.getmtime('SupportableUUIDList.txt'))"`
-	COMMIT_DATE=`date -j -f "%a %b %d %T %Y" "$LAST_PLIST_COMMIT_DATE" +%s`
-	FILE_DATE=`date -j -f "%a %b %d %T %Y" "$SUPPORTABLE_FILE_DATE" +%s`
-	if [[ $FILE_DATE > $COMMIT_DATE ]]; then
-		NEEDS_BUILD=0
+	# check if there are commits missing from the remote git repository
+	git fetch
+	NUM_BEHIND=`git rev-list HEAD...origin/master --count`
+	if [ $NUM_BEHIND == 0 ]; then
+	
+		#	If the latest supported file is newer than any local commits, go ahead and indicate that a build isn't needed
+		DATE_FORMAT="%a %b %d %T %Y"
+		LAST_PLIST_COMMIT_DATE=`git log -1 --format=%cd PlistFolder/*`
+		SUPPORTABLE_FILE_DATE=`python -c "import os,time; print time.ctime(os.path.getmtime('SupportableUUIDList.txt'))"`
+		COMMIT_DATE=`date -j -f "%a %b %d %T %Y" "$LAST_PLIST_COMMIT_DATE" +%s`
+		FILE_DATE=`date -j -f "%a %b %d %T %Y" "$SUPPORTABLE_FILE_DATE" +%s`
+		if [[ $FILE_DATE > $COMMIT_DATE ]]; then
+			NEEDS_BUILD=0
+		fi
 	fi
 	
 fi
