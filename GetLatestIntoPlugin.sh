@@ -81,8 +81,13 @@ if [[ $NEEDS_BUILD == 1 ]]; then
 
 fi	# End of if we should rebuild
 
+#	Set the default info plist path
+export PLIST_PATH="$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH"
+if [[ -n "$UPDATE_INFO_PLIST_PATH" ]]; then
+	export PLIST_PATH="$UPDATE_INFO_PLIST_PATH"
+fi
 
 #	Run the other script that will update my Info.plist file
 echo "Updating Info.plist file"
-echo "$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH"
-/usr/bin/osascript "UpdateInfoPlist.applescript" "$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH"
+echo "PList Path: $PLIST_PATH"
+/usr/bin/osascript "UpdateInfoPlist.applescript" "$PLIST_PATH"
