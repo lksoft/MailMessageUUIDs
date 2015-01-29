@@ -11,7 +11,7 @@
 		<string>ldap</string>
 	</array>
 	<key>BuildMachineOSBuild</key>
-	<string>14C91a</string>
+	<string>14C108</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDocumentTypes</key>
@@ -155,7 +155,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>2070.1</string>
+	<string>2070.6</string>
 	<key>DTCompiler</key>
 	<string>com.apple.compilers.llvm.clang.1_0</string>
 	<key>DTPlatformBuild</key>
