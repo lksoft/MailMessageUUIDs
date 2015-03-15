@@ -37,17 +37,18 @@ IS_RELEASE=0
 if [[ "$CONFIGURATION" == Release* ]]; then
 	IS_RELEASE=1
 fi
-if [[ -f "SupportableUUIDList.txt" && ($IS_RELEASE == 0) ]]; then
-	
+#"SupportableUUIDList.txt"
+FILE_NAME=SupportableUUIDList.plist
+if [[ -f "$FILE_NAME" && ($IS_RELEASE == 0) ]]; then
+
 	# check if there are commits missing from the remote git repository
-	git fetch
 	NUM_BEHIND=`git rev-list HEAD...origin/master --count`
 	if [ $NUM_BEHIND == 0 ]; then
-	
+
 		#	If the latest supported file is newer than any local commits, go ahead and indicate that a build isn't needed
 		DATE_FORMAT="%a %b %d %T %Y"
 		LAST_PLIST_COMMIT_DATE=`git log -1 --format=%cd PlistFolder/*`
-		SUPPORTABLE_FILE_DATE=`python -c "import os,time; print time.ctime(os.path.getmtime('SupportableUUIDList.txt'))"`
+		SUPPORTABLE_FILE_DATE=`python -c "import os,time; print time.ctime(os.path.getmtime('$FILE_NAME'))"`
 		COMMIT_DATE=`date -j -f "%a %b %d %T %Y" "$LAST_PLIST_COMMIT_DATE" +%s`
 		FILE_DATE=`date -j -f "%a %b %d %T %Y" "$SUPPORTABLE_FILE_DATE" +%s`
 		if [[ $FILE_DATE > $COMMIT_DATE ]]; then
@@ -77,7 +78,7 @@ if [[ $NEEDS_BUILD == 1 ]]; then
 
 	#	Run the script there that generates the UUID list file
 	echo "Generating UUID list file"
-	/usr/bin/osascript "ProcessMailMessageInfo.applescript" $@
+	/usr/bin/osascript "ProcessMailMessageInfo.applescript" plist $@
 
 fi	# End of if we should rebuild
 
@@ -90,4 +91,4 @@ fi
 #	Run the other script that will update my Info.plist file
 echo "Updating Info.plist file"
 echo "PList Path: $PLIST_PATH"
-/usr/bin/osascript "UpdateInfoPlist.applescript" "$PLIST_PATH"
+perl -w UpdateInfoPlist.pl "$MY_UUID_REPO/$FILE_NAME"

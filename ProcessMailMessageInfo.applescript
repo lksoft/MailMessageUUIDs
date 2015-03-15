@@ -2,8 +2,9 @@
 
 property outputAsJSON : false
 property outputAsDefinitions : false
+property outputAsPlist : false
 property outputFileName : "CompleteMailInfo"
-property outputUUIDListFileName : "SupportableUUIDList.txt"
+property outputUUIDListFileName : "SupportableUUIDList"
 property outputUUIDDefinitionsFileName : "CompleteUUIDDefinitions.plist"
 property startingMailComparator : 50
 property startingMessageComparator : 1000
@@ -32,6 +33,9 @@ on run argv
 			if (param contains "defs") then
 				set outputAsDefinitions to true
 			end if
+			if (param contains "plist") then
+				set outputAsPlist to true
+			end if
 		end repeat
 	end if
 	
@@ -51,8 +55,25 @@ on run argv
 	set completeMailInfo to filterMailInfo(filteredInfoList)
 	set completeMessageInfo to filterMessageInfo(filteredInfoList)
 	
+	--	Export a list of all of the UUIDs for both parts as plist file
+	if (outputAsPlist and outputUUIDListFileName is not equal to "") then
+		--	Write the contents of all uuids as a plist
+		if outputComments then
+			set mailComment to "<string># All Mail UUIDs</string>" & return
+			set messageComment to "<string># All Message UUIDs</string>" & return
+		else
+			set mailComment to ""
+			set messageComment to ""
+		end if
+		set outputContents to "<array>"
+		set outputContents to outputContents & messageComment & convertListToUUIDPList(completeMessageInfo)
+		set outputContents to outputContents & mailComment & convertListToUUIDPList(completeMailInfo)
+		set outputContents to outputContents & "</array>"
+		set outFilePath to (infoFolder as string) & outputUUIDListFileName & ".plist"
+		writeFileWithContents(outFilePath, outputContents)
+
 	--	Export a list of all of the UUIDs for both parts as simple file
-	if (outputUUIDListFileName is not equal to "") then
+	else if (outputUUIDListFileName is not equal to "") then
 		--	Write the contents of all uuids as a simple list
 		if outputComments then
 			set mailComment to "# All Mail UUIDs" & return
@@ -63,7 +84,7 @@ on run argv
 		end if
 		set outputContents to messageComment & convertListToUUIDStringList(completeMessageInfo)
 		set outputContents to outputContents & mailComment & convertListToUUIDStringList(completeMailInfo)
-		set outFilePath to (infoFolder as string) & outputUUIDListFileName
+		set outFilePath to (infoFolder as string) & outputUUIDListFileName & ".txt"
 		writeFileWithContents(outFilePath, outputContents)
 	end if
 	
@@ -315,6 +336,34 @@ on convertListToUUIDStringList(theList)
 	return infoData
 	
 end convertListToUUIDStringList
+
+on convertListToUUIDPList(theList)
+	
+	-- use a repeat loop to loop over a list of something
+	set infoData to ""
+	set uuidList to {} as list
+	
+	repeat with mailInfo in theList
+		
+		if (uuidList does not contain (uuid of mailInfo)) then
+			--	Build out the plist contents
+			if (outputComments) then
+				set buildInfo to ""
+				if ((otherDescription of mailInfo) is not "") then
+					set buildInfo to " (build " & (otherDescription of mailInfo) & ")"
+				end if
+				set infoData to infoData & "<string># For " & (type of mailInfo) & " version " & (displayVersion of mailInfo) & " (" & (versionNumber of mailInfo) & ") on OS X Version " & (startOS of mailInfo) & buildInfo & "</string>" & return
+			end if
+			set infoData to infoData & "<string>" & (uuid of mailInfo) & "</string>" & return
+			
+			set end of uuidList to (uuid of mailInfo)
+		end if
+		
+	end repeat
+	
+	return infoData
+	
+end convertListToUUIDPList
 
 on convertListToPlistSection(theList)
 	
