@@ -11,17 +11,9 @@ fi
 
 MAJOR_VERSION=`echo "$OS_VERSION" | cut -f 2 -d .`
 
-MESSAGE_PATH="/System/Library/Frameworks/Message.framework/Resources/Info.plist"
 MAIL_PATH="/Applications/Mail.app/Contents/Info.plist"
-
-if [[ -f $MESSAGE_PATH ]]; then
-	if [[ $MAJOR_VERSION < 9 ]]; then
-		echo "Extracting Message plist"
-		cp "$MESSAGE_PATH" "$OS_VERSION-message-$BUILD_SECTION-info.plist"
-	fi
-fi
 
 if [[ -f $MAIL_PATH ]]; then
 	echo "Extracting Mail plist"
-	cp "$MAIL_PATH" "$OS_VERSION-mail-$BUILD_SECTION-info.plist"
+	cp "$MAIL_PATH" "PListFolder/$OS_VERSION-mail-$BUILD_SECTION-info.plist"
 fi
