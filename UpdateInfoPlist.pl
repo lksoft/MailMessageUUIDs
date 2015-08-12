@@ -12,7 +12,7 @@ die "$0: Must be run from Xcode" unless $ENV{"BUILT_PRODUCTS_DIR"};
 
 # Get the current git branch and sha hash
 # 	to use them to set the CFBundleVersion value
-my $INFO = "$ENV{BUILT_PRODUCTS_DIR}/$ENV{INFOPLIST_PATH}";
+my $INFO = "$ARGV[1]";
 
 my $baseDir = ".";
 if ($ENV{"SRCROOT"}) {

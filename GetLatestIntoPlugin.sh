@@ -91,4 +91,4 @@ fi
 #	Run the other script that will update my Info.plist file
 echo "Updating Info.plist file"
 echo "PList Path: $PLIST_PATH"
-perl -w UpdateInfoPlist.pl "$MY_UUID_REPO/$FILE_NAME"
+perl -w UpdateInfoPlist.pl "$MY_UUID_REPO/$FILE_NAME" "$PLIST_PATH"
