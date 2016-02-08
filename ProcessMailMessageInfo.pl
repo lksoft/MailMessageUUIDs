@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
 #use diagnostics;
+#use Data::Dumper;
 use strict;
 use feature "switch";
 use File::Basename;
@@ -8,8 +9,6 @@ use IO::Handle();
 use IO::File();
 use Mac::PropertyList qw(:all);
 
-
-use Data::Dumper;
 
 # Setup default values
 my $startingOS = "10.1";
