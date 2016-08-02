@@ -26,7 +26,7 @@ die "$0: No UUID content found" unless $NEW_UUIDS;
 my $info = `plutil -convert xml1 -o - "$INFO"`;
 
 # replace both the branch name and the hash value
-$info =~ s/<string>\[UUIDS_HERE\]<\/string>/$NEW_UUIDS/;
+$info =~ s/<string>\[UUIDS_HERE\]<\/string>/$NEW_UUIDS/g;
 
 # Rewrite the contents to the file
 open(FH, ">$INFO") or die "$0: $INFO: $!";
