@@ -14,9 +14,10 @@ die "$0: Must be run from Xcode" unless $ENV{"BUILT_PRODUCTS_DIR"};
 # 	to use them to set the CFBundleVersion value
 my $INFO = "$ARGV[1]";
 my $UUID_SEARCH_KEY = "UUIDS_HERE";
-if (scalar(@ARGV) > 2) {
-	$UUID_SEARCH_KEY = "$ARGV[2]";
+if ("$ARGV[2]") {
+	$UUID_SEARCH_KEY = $ARGV[2];
 }
+print "Search KEY is: $UUID_SEARCH_KEY";
 
 my $baseDir = ".";
 if ($ENV{"SRCROOT"}) {

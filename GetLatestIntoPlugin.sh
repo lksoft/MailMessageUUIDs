@@ -91,11 +91,11 @@ fi
 UUID_KEY=''
 for i in {1..10}
 do
-	shift
 	if [[ "$1" == uu=* ]]; then
 		UUID_KEY=`echo $1 | cut -b 4-`
 		break
 	fi
+	shift
 done
 echo "The UUID KEY is: $UUID_KEY"
 
