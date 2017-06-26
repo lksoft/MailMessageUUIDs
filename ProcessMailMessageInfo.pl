@@ -101,6 +101,7 @@ my @sortedInfoList = buildSortedInfoListFromFolder($plistDirPath);
 
 my $outputContents = '';
 my $outputFilePath = '';
+my $versionRangeString = "UUIDs for versions from $startingOS to $endingOS";
 
 #	Export the definitions
 if ($outputAsDefinitions) {
@@ -127,7 +128,7 @@ if ($outputAsText || $outputAsPlist) {
 		my $mailComment = '';
 		my $messageComment = '';
 		if ($showComments) {
-			$mailComment = "<string># All Mail UUIDs</string>\n";
+			$mailComment = "<string># $versionRangeString</string>\n";
 			if ($#completeMessageInfo > 0) {
 				$messageComment = "<string># All Message UUIDs</string>\n";
 			}
@@ -143,7 +144,7 @@ if ($outputAsText || $outputAsPlist) {
 		my $mailComment = '';
 		my $messageComment = '';
 		if ($showComments) {
-			$mailComment = "# All Mail UUIDs\n";
+			$mailComment = "# $versionRangeString\n";
 			if ($#completeMessageInfo > 0) {
 				$messageComment = "# All Message UUIDs\n";
 			}

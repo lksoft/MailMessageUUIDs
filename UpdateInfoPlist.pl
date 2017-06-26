@@ -13,6 +13,10 @@ die "$0: Must be run from Xcode" unless $ENV{"BUILT_PRODUCTS_DIR"};
 # Get the current git branch and sha hash
 # 	to use them to set the CFBundleVersion value
 my $INFO = "$ARGV[1]";
+my $UUID_SEARCH_KEY = "UUIDS_HERE";
+if (scalar(@ARGV) > 2) {
+	$UUID_SEARCH_KEY = "$ARGV[2]";
+}
 
 my $baseDir = ".";
 if ($ENV{"SRCROOT"}) {
@@ -26,7 +30,7 @@ die "$0: No UUID content found" unless $NEW_UUIDS;
 my $info = `plutil -convert xml1 -o - "$INFO"`;
 
 # replace both the branch name and the hash value
-$info =~ s/<string>\[UUIDS_HERE\]<\/string>/$NEW_UUIDS/g;
+$info =~ s/<string>\[$UUID_SEARCH_KEY\]<\/string>/$NEW_UUIDS/g;
 
 # Rewrite the contents to the file
 open(FH, ">$INFO") or die "$0: $INFO: $!";

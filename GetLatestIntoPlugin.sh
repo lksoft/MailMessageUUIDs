@@ -76,11 +76,11 @@ if [[ $NEEDS_BUILD == 1 ]]; then
 	git pull origin master
 
 
-	#	Run the script there that generates the UUID list file
-	echo "Generating UUID list file"
-	./ProcessMailMessageInfo.pl plist "$@"
-
 fi	# End of if we should rebuild
+
+#	Run the script there that generates the UUID list file
+echo "Generating UUID list file"
+./ProcessMailMessageInfo.pl plist "$@"
 
 #	Set the default info plist path
 export PLIST_PATH="$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH"
@@ -88,7 +88,18 @@ if [[ -n "$UPDATE_INFO_PLIST_PATH" ]]; then
 	export PLIST_PATH="$UPDATE_INFO_PLIST_PATH"
 fi
 
+UUID_KEY=''
+for i in {1..10}
+do
+	shift
+	if [[ "$1" == uu=* ]]; then
+		UUID_KEY=`echo $1 | cut -b 4-`
+		break
+	fi
+done
+echo "The UUID KEY is: $UUID_KEY"
+
 #	Run the other script that will update my Info.plist file
 echo "Updating Info.plist file"
 echo "PList Path: $PLIST_PATH"
-perl -w UpdateInfoPlist.pl "$MY_UUID_REPO/$FILE_NAME" "$PLIST_PATH"
+perl -w UpdateInfoPlist.pl "$MY_UUID_REPO/$FILE_NAME" "$PLIST_PATH" "$UUID_KEY"
