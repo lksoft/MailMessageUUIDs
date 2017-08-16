@@ -96,6 +96,15 @@ print "OutputAsPlist: $outputAsPlist\n";
 print "OutputAsDefinitions: $outputAsDefinitions\n";
 
 
+# Test to see if this combo has been built already and if so, put it in place and return
+my $archivedFilePath = "$scriptDirPath/Archived/$startingOS-$endingOS.plist";
+if ($outputAsPlist && -e "$archivedFilePath") {
+	my $outputFilePath = "$scriptDirPath/$outputSupportableFileName.plist";
+	system("cp", $archivedFilePath, $outputFilePath);
+	return; 
+}
+
+
 # Get the sorted complete list
 my @sortedInfoList = buildSortedInfoListFromFolder($plistDirPath);
 
@@ -157,6 +166,7 @@ if ($outputAsText || $outputAsPlist) {
 
 if (($outputContents ne '') && ($outputFilePath ne '')) {
 	writeFileWithContents($outputFilePath, $outputContents);
+	writeFileWithContents($archivedFilePath, $outputContents);
 }
 
 

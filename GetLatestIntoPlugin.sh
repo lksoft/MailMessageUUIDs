@@ -58,6 +58,11 @@ if [[ -f "$FILE_NAME" && ($IS_RELEASE == 0) ]]; then
 	
 fi
 
+if [[ ! -d Archived ]]; then
+	mkdir Archived
+fi
+
+PREV_HASH=`git rev-parse HEAD`;
 # If we actually do need to rebuild the files
 if [[ $NEEDS_BUILD == 1 ]]; then
 	
@@ -74,6 +79,12 @@ if [[ $NEEDS_BUILD == 1 ]]; then
 		exit 3
 	fi
 	git pull origin master
+
+	UPDATED_HASH=`git rev-parse HEAD`;
+	if [[ $PREV_HASH != $UPDATED_HASH ]]; then
+		# delete the contents of the Archive folder
+		rm Archived/*
+	fi
 
 
 fi	# End of if we should rebuild
