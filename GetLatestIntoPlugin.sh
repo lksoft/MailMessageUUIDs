@@ -80,14 +80,14 @@ if [[ $NEEDS_BUILD == 1 ]]; then
 	fi
 	git pull origin master
 
-	UPDATED_HASH=`git rev-parse HEAD`;
-	if [[ $PREV_HASH != $UPDATED_HASH ]]; then
-		# delete the contents of the Archive folder
-		rm Archived/*
-	fi
-
 
 fi	# End of if we should rebuild
+
+UPDATED_HASH=`git rev-parse HEAD`;
+if [[ $PREV_HASH != $UPDATED_HASH ]]; then
+	# delete the contents of the Archive folder
+	rm Archived/*
+fi
 
 #	Run the script there that generates the UUID list file
 echo "Generating UUID list file"
