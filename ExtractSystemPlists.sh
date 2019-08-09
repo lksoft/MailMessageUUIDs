@@ -13,6 +13,10 @@ MAJOR_VERSION=`echo "$OS_VERSION" | cut -f 2 -d .`
 
 MAIL_PATH="/Applications/Mail.app/Contents/Info.plist"
 
+if [[ ! -f $MAIL_PATH ]]; then
+	MAIL_PATH="/System/Applications/Mail.app/Contents/Info.plist"
+fi
+
 if [[ -f $MAIL_PATH ]]; then
 	echo "Extracting Mail plist"
 	cp "$MAIL_PATH" "PListFolder/$OS_VERSION-mail-$BUILD_SECTION-info.plist"
