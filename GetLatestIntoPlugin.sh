@@ -48,7 +48,7 @@ if [[ -f "$FILE_NAME" && ($IS_RELEASE == 0) ]]; then
 		#	If the latest supported file is newer than any local commits, go ahead and indicate that a build isn't needed
 		DATE_FORMAT="%a %b %d %T %Y"
 		LAST_PLIST_COMMIT_DATE=`git log -1 --format=%cd PlistFolder/*`
-		SUPPORTABLE_FILE_DATE=`/usr/bin/python -c "import os,time; print time.ctime(os.path.getmtime('$FILE_NAME'))"`
+		SUPPORTABLE_FILE_DATE=`/usr/bin/python3 -c "import os,time; print(time.ctime(os.path.getmtime('$FILE_NAME')))"`
 		COMMIT_DATE=`date -j -f "%a %b %d %T %Y" "$LAST_PLIST_COMMIT_DATE" +%s`
 		FILE_DATE=`date -j -f "%a %b %d %T %Y" "$SUPPORTABLE_FILE_DATE" +%s`
 		if [[ $FILE_DATE > $COMMIT_DATE ]]; then
